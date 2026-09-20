@@ -1,84 +1,72 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JayR Social Publisher</title>
 <style>
-:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f6f7f9}
-*{box-sizing:border-box}body{margin:0}.wrap{max-width:880px;margin:auto;padding:28px 22px 60px}
-nav{display:flex;gap:18px;margin-bottom:42px}nav a{color:#333;text-decoration:none}nav a:hover{text-decoration:underline}
-.hero{background:#fff;border:1px solid #e4e6eb;border-radius:18px;padding:34px;box-shadow:0 10px 30px rgba(0,0,0,.04)}
-h1{font-size:2.35rem;margin:0 0 10px}h2{margin-top:32px}.muted{color:#60646c}.status{display:flex;align-items:center;gap:10px;margin:20px 0;padding:14px 16px;border-radius:12px;background:#f2f3f5}.dot{width:10px;height:10px;border-radius:50%;background:#999}.status.connected .dot{background:#16a34a}.status.error .dot{background:#dc2626}
-button,.button{display:inline-block;border:0;border-radius:10px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;background:#111;color:#fff}.button.secondary{background:#fff;color:#111;border:1px solid #ccc}
-.upload{margin-top:24px;padding:22px;border:1px dashed #bbb;border-radius:14px;background:#fafafa}input[type=file]{display:block;width:100%;margin:12px 0 16px}button:disabled{opacity:.45;cursor:not-allowed}
-#fileInfo,#message{margin-top:12px;font-size:.94rem}.hidden{display:none}footer{margin-top:32px;color:#666;font-size:.9rem}
-</style>
-</head>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f6f7f9}*{box-sizing:border-box}body{margin:0}.wrap{max-width:880px;margin:auto;padding:28px 22px 60px}nav{display:flex;gap:18px;margin-bottom:42px}nav a{color:#333;text-decoration:none}.hero{background:#fff;border:1px solid #e4e6eb;border-radius:18px;padding:34px;box-shadow:0 10px 30px rgba(0,0,0,.04)}h1{font-size:2.35rem;margin:0 0 10px}h2{margin-top:32px}.muted{color:#60646c}.status{display:flex;align-items:center;gap:10px;margin:20px 0;padding:14px 16px;border-radius:12px;background:#f2f3f5}.dot{width:10px;height:10px;border-radius:50%;background:#999}.status.connected .dot{background:#16a34a}.status.error .dot{background:#dc2626}button,.button{display:inline-block;border:0;border-radius:10px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;background:#111;color:#fff}.upload{margin-top:24px;padding:22px;border:1px dashed #bbb;border-radius:14px;background:#fafafa}input[type=file]{display:block;width:100%;margin:12px 0 16px}button:disabled{opacity:.45;cursor:not-allowed}#fileInfo,#message{margin-top:12px;font-size:.94rem}.progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:14px}.progress>div{height:100%;width:0;background:#111;transition:width .2s}.hidden{display:none}footer{margin-top:32px;color:#666;font-size:.9rem}
+</style></head>
 <body><div class="wrap">
 <nav><a href="index.html">Home</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a></nav>
-<main class="hero">
-<h1>JayR Social Publisher</h1>
+<main class="hero"><h1>JayR Social Publisher</h1>
 <p class="muted">Prepare and upload original short-form video content to your authorized TikTok account.</p>
 <h2>TikTok</h2>
 <div id="status" class="status"><span class="dot"></span><span id="statusText">Checking TikTok connection…</span></div>
 <a id="connect" class="button hidden" href="https://jayr-social-publisher.jrlewis45.workers.dev/auth/login">Connect TikTok</a>
 <section id="uploader" class="upload hidden">
 <strong>Upload a video to TikTok</strong>
-<p class="muted">Select an MP4, MOV, or WebM video. The video will be sent to TikTok as a draft for you to review and finish posting in the TikTok app.</p>
+<p class="muted">Select an MP4, MOV, or WebM video. It will be transferred to TikTok as a draft for you to review and finish posting in the TikTok app.</p>
 <input id="video" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
-<div id="fileInfo"></div>
-<button id="uploadButton" type="button" disabled>Upload to TikTok</button>
-<div id="message"></div>
+<div id="fileInfo"></div><button id="uploadButton" type="button" disabled>Upload to TikTok</button>
+<div id="progressWrap" class="progress hidden"><div id="progressBar"></div></div><div id="message"></div>
 </section>
 <p class="muted">JayR Social Publisher uses TikTok's official authorization flow and never asks for your TikTok password.</p>
-</main>
-<footer>© 2026 JayR Social Publisher</footer>
-</div>
+</main><footer>© 2026 JayR Social Publisher</footer></div>
 <script>
 const API="https://jayr-social-publisher.jrlewis45.workers.dev";
-const statusBox=document.getElementById("status");
-const statusText=document.getElementById("statusText");
-const connect=document.getElementById("connect");
-const uploader=document.getElementById("uploader");
-const video=document.getElementById("video");
-const uploadButton=document.getElementById("uploadButton");
-const fileInfo=document.getElementById("fileInfo");
-const message=document.getElementById("message");
+const $=id=>document.getElementById(id);
+const statusBox=$("status"),statusText=$("statusText"),connect=$("connect"),uploader=$("uploader"),video=$("video"),uploadButton=$("uploadButton"),fileInfo=$("fileInfo"),message=$("message"),progressWrap=$("progressWrap"),progressBar=$("progressBar");
 
+async function jsonFetch(url,options={}){
+ const r=await fetch(url,options); let d={};
+ try{d=await r.json()}catch{}
+ if(!r.ok) throw new Error(d.error||d.details||("Request failed ("+r.status+")"));
+ return d;
+}
 async function checkStatus(){
- try{
-  const r=await fetch(API+"/api/status",{cache:"no-store"});
-  const d=await r.json();
-  if(d.connected){
-   statusBox.classList.add("connected");
-   statusText.textContent="TikTok connected ✓";
-   uploader.classList.remove("hidden");
-  }else{
-   statusText.textContent="TikTok is not connected.";
-   connect.classList.remove("hidden");
-  }
- }catch(e){
-  statusBox.classList.add("error");
-  statusText.textContent="Unable to check TikTok connection.";
-  connect.classList.remove("hidden");
- }
+ try{const d=await jsonFetch(API+"/api/status",{cache:"no-store"});
+  if(d.connected){statusBox.classList.add("connected");statusText.textContent="TikTok connected ✓";uploader.classList.remove("hidden")}
+  else{statusText.textContent="TikTok is not connected.";connect.classList.remove("hidden")}
+ }catch(e){statusBox.classList.add("error");statusText.textContent="Unable to check TikTok connection.";connect.classList.remove("hidden")}
 }
 video.addEventListener("change",()=>{
- const f=video.files[0];
- message.textContent="";
+ const f=video.files[0];message.textContent="";progressWrap.classList.add("hidden");progressBar.style.width="0%";
  if(!f){fileInfo.textContent="";uploadButton.disabled=true;return}
- const allowed=["video/mp4","video/quicktime","video/webm"];
- if(!allowed.includes(f.type)){
-  fileInfo.textContent="Please choose an MP4, MOV, or WebM video.";
-  uploadButton.disabled=true;return;
- }
- fileInfo.textContent=f.name+" • "+(f.size/1024/1024).toFixed(1)+" MB";
- uploadButton.disabled=false;
+ const ext=f.name.split(".").pop().toLowerCase();
+ const allowedMime=["video/mp4","video/quicktime","video/webm"],allowedExt=["mp4","mov","webm"];
+ if(!(allowedMime.includes(f.type)||allowedExt.includes(ext))){fileInfo.textContent="Please choose an MP4, MOV, or WebM video.";uploadButton.disabled=true;return}
+ fileInfo.textContent=f.name+" • "+(f.size/1024/1024).toFixed(1)+" MB";uploadButton.disabled=false;
 });
-uploadButton.addEventListener("click",()=>{
- message.textContent="The website is ready. The final TikTok upload endpoint is being connected next.";
+uploadButton.addEventListener("click",async()=>{
+ const f=video.files[0]; if(!f)return;
+ uploadButton.disabled=true;video.disabled=true;progressWrap.classList.remove("hidden");progressBar.style.width="0%";message.textContent="Starting TikTok upload…";
+ try{
+  const ext=f.name.split(".").pop().toLowerCase();
+  let mime=f.type;if(!mime){mime=ext==="mov"?"video/quicktime":ext==="webm"?"video/webm":"video/mp4"}
+  const init=await jsonFetch(API+"/api/upload/init",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({video_size:f.size,mime_type:mime})});
+  const size=init.chunk_size,total=init.total_chunks,pid=init.publish_id;
+  for(let i=0;i<total;i++){
+   const start=i*size;
+   const end=(i===total-1)?f.size:Math.min(start+size,f.size);
+   const blob=f.slice(start,end);
+   message.textContent="Uploading… "+Math.round((start/f.size)*100)+"%";
+   const result=await jsonFetch(API+"/api/upload/chunk",{method:"POST",headers:{"Content-Type":"application/octet-stream","X-Publish-Id":pid,"X-Chunk-Index":String(i)},body:blob});
+   const pct=Math.round((end/f.size)*100);progressBar.style.width=pct+"%";message.textContent="Uploading… "+pct+"%";
+   if(i===total-1&&!result.complete)throw new Error("TikTok did not confirm the final chunk.");
+  }
+  progressBar.style.width="100%";message.textContent="Upload complete. TikTok is processing the draft. Check your TikTok inbox shortly to finish posting.";
+ }catch(e){message.textContent="Upload failed: "+e.message}
+ finally{video.disabled=false;uploadButton.disabled=false}
 });
 checkStatus();
-</script>
-</body></html>
+</script></body></html>
