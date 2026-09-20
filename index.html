@@ -39,7 +39,9 @@ async function checkStatus(){
   else{statusText.textContent="TikTok is not connected.";connect.classList.remove("hidden")}
  }catch(e){statusBox.classList.add("error");statusText.textContent="Unable to check TikTok connection.";connect.classList.remove("hidden")}
 }
-caption.addEventListener("input",()=>{captionCount.textContent=caption.value.length+" / 2200"});\ncopyCaption.addEventListener("click",async()=>{if(!caption.value.trim()){message.textContent="Write a caption first.";return}try{await navigator.clipboard.writeText(caption.value);message.textContent="Caption copied ✓ — paste it into TikTok when you open the draft."}catch(e){caption.select();document.execCommand("copy");message.textContent="Caption copied ✓ — paste it into TikTok when you open the draft."}});\nvideo.addEventListener("change",()=>{
+caption.addEventListener("input",()=>{captionCount.textContent=caption.value.length+" / 2200"});
+copyCaption.addEventListener("click",async()=>{if(!caption.value.trim()){message.textContent="Write a caption first.";return}try{await navigator.clipboard.writeText(caption.value);message.textContent="Caption copied ✓ — paste it into TikTok when you open the draft."}catch(e){caption.select();document.execCommand("copy");message.textContent="Caption copied ✓ — paste it into TikTok when you open the draft."}});
+video.addEventListener("change",()=>{
  const f=video.files[0];message.textContent="";progressWrap.classList.add("hidden");progressBar.style.width="0%";
  if(!f){fileInfo.textContent="";uploadButton.disabled=true;return}
  const ext=f.name.split(".").pop().toLowerCase();
