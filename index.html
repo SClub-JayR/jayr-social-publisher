@@ -17,7 +17,7 @@
 <strong>Upload a video to TikTok</strong>
 <p class="muted">Select an MP4, MOV, or WebM video. It will be transferred to TikTok as a draft for you to review and finish posting in the TikTok app.</p>
 <input id="video" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
-<div id="fileInfo"></div><button id="uploadButton" type="button" disabled>Upload to TikTok</button>
+<div id="fileInfo"></div><label for="caption" style="display:block;margin:16px 0 6px;font-weight:700">Caption / description</label><textarea id="caption" maxlength="2200" rows="5" placeholder="Write your TikTok caption and hashtags here…" style="width:100%;padding:12px;border:1px solid #bbb;border-radius:10px;font:inherit;resize:vertical"></textarea><div style="display:flex;justify-content:space-between;gap:12px;margin:6px 0 16px"><span id="captionCount" class="muted">0 / 2200</span><button id="copyCaption" type="button" class="button secondary">Copy caption</button></div><button id="uploadButton" type="button" disabled>Upload to TikTok</button>
 <div id="progressWrap" class="progress hidden"><div id="progressBar"></div></div><div id="message"></div>
 </section>
 <p class="muted">JayR Social Publisher uses TikTok's official authorization flow and never asks for your TikTok password.</p>
@@ -25,7 +25,7 @@
 <script>
 const API="https://jayr-social-publisher.jrlewis45.workers.dev";
 const $=id=>document.getElementById(id);
-const statusBox=$("status"),statusText=$("statusText"),connect=$("connect"),uploader=$("uploader"),video=$("video"),uploadButton=$("uploadButton"),fileInfo=$("fileInfo"),message=$("message"),progressWrap=$("progressWrap"),progressBar=$("progressBar");
+const statusBox=$("status"),statusText=$("statusText"),connect=$("connect"),uploader=$("uploader"),video=$("video"),uploadButton=$("uploadButton"),fileInfo=$("fileInfo"),message=$("message"),progressWrap=$("progressWrap"),progressBar=$("progressBar"),caption=$("caption"),captionCount=$("captionCount"),copyCaption=$("copyCaption");
 
 async function jsonFetch(url,options={}){
  const r=await fetch(url,options); let d={};
@@ -39,7 +39,7 @@ async function checkStatus(){
   else{statusText.textContent="TikTok is not connected.";connect.classList.remove("hidden")}
  }catch(e){statusBox.classList.add("error");statusText.textContent="Unable to check TikTok connection.";connect.classList.remove("hidden")}
 }
-video.addEventListener("change",()=>{
+caption.addEventListener("input",()=>{captionCount.textContent=caption.value.length+" / 2200"});\ncopyCaption.addEventListener("click",async()=>{if(!caption.value.trim()){message.textContent="Write a caption first.";return}try{await navigator.clipboard.writeText(caption.value);message.textContent="Caption copied ✓ — paste it into TikTok when you open the draft."}catch(e){caption.select();document.execCommand("copy");message.textContent="Caption copied ✓ — paste it into TikTok when you open the draft."}});\nvideo.addEventListener("change",()=>{
  const f=video.files[0];message.textContent="";progressWrap.classList.add("hidden");progressBar.style.width="0%";
  if(!f){fileInfo.textContent="";uploadButton.disabled=true;return}
  const ext=f.name.split(".").pop().toLowerCase();
@@ -64,7 +64,7 @@ uploadButton.addEventListener("click",async()=>{
    const pct=Math.round((end/f.size)*100);progressBar.style.width=pct+"%";message.textContent="Uploading… "+pct+"%";
    if(i===total-1&&!result.complete)throw new Error("TikTok did not confirm the final chunk.");
   }
-  progressBar.style.width="100%";message.textContent="Upload complete. TikTok is processing the draft. Check your TikTok inbox shortly to finish posting.";
+  progressBar.style.width="100%";message.textContent=caption.value.trim()?"Upload complete. TikTok is processing the draft. Click Copy caption, then paste it when you finish the post in TikTok.":"Upload complete. TikTok is processing the draft. Check your TikTok inbox shortly to finish posting.";
  }catch(e){message.textContent="Upload failed: "+e.message}
  finally{video.disabled=false;uploadButton.disabled=false}
 });
